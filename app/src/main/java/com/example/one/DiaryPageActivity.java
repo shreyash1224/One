@@ -44,6 +44,12 @@ public class DiaryPageActivity extends AppCompatActivity {
         String title = editTitle.getText().toString();
         String content = editContent.getText().toString();
 
+        // Check if title or content is empty
+        if (title.isEmpty() || content.isEmpty()) {
+            Toast.makeText(this, "Title and Content cannot be empty", Toast.LENGTH_SHORT).show();
+            return; // Do not proceed with saving
+        }
+
         if (pageTitle != null) {
             // Update existing page
             dbHelper.updatePage(pageTitle, title, content);
@@ -54,7 +60,7 @@ public class DiaryPageActivity extends AppCompatActivity {
             Toast.makeText(this, "Page Added", Toast.LENGTH_SHORT).show();
         }
 
-        finish();
+        finish(); // Close the activity after saving
     }
 
     public void deletePage(View view) {
