@@ -33,6 +33,13 @@ public class DiaryPageActivity extends AppCompatActivity {
         }
     }
 
+    @Override
+    public void onBackPressed() {
+        // Save the page before exiting
+        savePage(null);
+        super.onBackPressed();
+    }
+
     public void savePage(View view) {
         String title = editTitle.getText().toString();
         String content = editContent.getText().toString();
