@@ -1,41 +1,59 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:weightSum="10">
+    android:layout_height="match_parent">
 
-    <EditText
-        android:id="@+id/editTitle"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:hint="Title"/>
-
-    <EditText
-        android:id="@+id/editContent"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="8"
-        android:hint="Content"
-        android:inputType="textMultiLine"
-        android:lines="10"
-        android:gravity="start|top" />
-
+    <!-- Main Content Layout (90% Width) -->
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:orientation="horizontal"
-        android:gravity="center">
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:padding="16dp"
+        >
 
-        <!-- Remove the save button -->
+        <EditText
+            android:id="@+id/editTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Title"/>
+
+        <EditText
+            android:id="@+id/editContent"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:hint="Content"
+            android:inputType="textMultiLine"
+            android:gravity="start|top"/>
+
         <Button
             android:id="@+id/deleteButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Delete"
-            android:onClick="deletePage"/>
+            android:onClick="deletePage"
+            android:layout_gravity="center_horizontal"/>
     </LinearLayout>
 
-</LinearLayout>
+    <!-- Floating Resource Bar (10% Width) -->
+    <LinearLayout
+        android:id="@+id/resourceBar"
+        android:layout_width="50dp"
+        android:layout_height="match_parent"
+        android:layout_gravity="end"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:elevation="8dp"
+        android:padding="8dp">
+
+        <ImageView
+            android:id="@+id/resourceImage"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/images"
+            android:contentDescription="Resource Image"
+            android:padding="8dp"/>
+
+    </LinearLayout>
+
+</FrameLayout>
