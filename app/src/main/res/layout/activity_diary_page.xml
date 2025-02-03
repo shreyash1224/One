@@ -1,15 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:paddingTop="16dp">
 
-    <!-- Main Content Layout (90% Width) -->
+    <!-- Main Content Layout -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
-        >
+        android:paddingBottom="56dp">  <!-- Ensures content is not blocked by the delete button -->
 
         <EditText
             android:id="@+id/editTitle"
@@ -25,24 +26,28 @@
             android:gravity="start|top"
             android:hint="Content"
             android:inputType="textMultiLine" />
-
-        <Button
-            android:id="@+id/deleteButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Delete"
-            android:onClick="deletePage"
-            android:layout_gravity="center_horizontal"/>
     </LinearLayout>
 
-    <!-- Bottom Toolbar -->
+    <!-- Floating Action Button (Overlays on top of the content) -->
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/deleteButton"
+        android:layout_width="wrap_content"
+        android:layout_height="118dp"
+        android:layout_gravity="bottom|end"
+        android:layout_margin="16dp"
+        android:contentDescription="Delete Page"
+        android:onClick="deletePage"
+        app:srcCompat="@android:drawable/ic_menu_delete" />
+
+    <!-- Bottom Toolbar (Fixed at the bottom) -->
     <LinearLayout
         android:id="@+id/bottomToolbar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom"
-        android:gravity="start"
         android:orientation="horizontal"
+        android:gravity="start"
+        android:background="@android:color/transparent"
         android:padding="8dp">
 
         <ImageButton
