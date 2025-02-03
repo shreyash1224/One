@@ -59,6 +59,7 @@
             android:onClick="onResourceImageClick"
             android:padding="8dp"
             android:src="@drawable/images" />
+
     </LinearLayout>
 
 </FrameLayout>

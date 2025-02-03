@@ -1,17 +1,30 @@
 package com.example.one;
 
 import android.content.Intent;
+import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.view.View;
-import android.widget.EditText;
-import android.widget.Toast;
+import android.widget.ImageView;
+import androidx.activity.result.ActivityResult;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
+
+import android.graphics.Bitmap;
+import android.widget.EditText;
+import android.text.Spannable;
+import android.text.SpannableString;
+import android.text.style.ImageSpan;
+import android.widget.Toast;
 
 public class DiaryPageActivity extends AppCompatActivity {
 
+    private static final int IMAGE_PICK_REQUEST = 1;
     EditText editTitle, editContent;
     DiaryDatabaseHelper dbHelper;
     String pageTitle;
+    private Uri selectedImageUri;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -26,48 +39,49 @@ public class DiaryPageActivity extends AppCompatActivity {
         pageTitle = intent.getStringExtra("pageTitle");
 
         if (pageTitle != null) {
-            // If editing an existing page, load the content
             DiaryPage page = dbHelper.getPage(pageTitle);
             editTitle.setText(page.getTitle());
             editContent.setText(page.getContent());
         }
     }
 
+    // Method to pick image from gallery
+    public void onResourceImageClick(View view) {
+        Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+        startActivityForResult(intent, IMAGE_PICK_REQUEST);
+    }
+
     @Override
-    public void onBackPressed() {
-        // Save the page before exiting
-        savePage(null);
-        super.onBackPressed();
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (resultCode == RESULT_OK && requestCode == IMAGE_PICK_REQUEST) {
+            selectedImageUri = data.getData();
+            // Add the image into the content at the cursor position
+            insertImageAtCursor();
+        }
     }
 
-    public void savePage(View view) {
-        String title = editTitle.getText().toString();
-        String content = editContent.getText().toString();
+    private void insertImageAtCursor() {
+        try {
+            if (selectedImageUri != null) {
+                Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), selectedImageUri);
+                // Resize the image to fit within the height of 6 lines of text
+                int maxHeight = editContent.getLineHeight() * 6;  // 6 lines of text
+                if (bitmap.getHeight() > maxHeight) {
+                    float ratio = (float) maxHeight / bitmap.getHeight();
+                    int width = (int) (bitmap.getWidth() * ratio);
+                    bitmap = Bitmap.createScaledBitmap(bitmap, width, maxHeight, false);
+                }
 
-        // Check if title or content is empty
-        if (title.isEmpty() || content.isEmpty()) {
-            Toast.makeText(this, "Title and Content cannot be empty", Toast.LENGTH_SHORT).show();
-            return; // Do not proceed with saving
-        }
+                ImageSpan imageSpan = new ImageSpan(this, bitmap);
+                int cursorPosition = editContent.getSelectionStart();
+                SpannableString spannableString = new SpannableString(" ");  // A space to hold the image
+                spannableString.setSpan(imageSpan, 0, 1, Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
 
-        if (pageTitle != null) {
-            // Update existing page
-            dbHelper.updatePage(pageTitle, title, content);
-            Toast.makeText(this, "Page Updated", Toast.LENGTH_SHORT).show();
-        } else {
-            // Save new page
-            dbHelper.addPage(title, content);
-            Toast.makeText(this, "Page Added", Toast.LENGTH_SHORT).show();
-        }
-
-        finish(); // Close the activity after saving
-    }
-
-    public void deletePage(View view) {
-        if (pageTitle != null) {
-            dbHelper.deletePage(pageTitle);
-            Toast.makeText(this, "Page Deleted", Toast.LENGTH_SHORT).show();
-            finish();
+                editContent.getText().insert(cursorPosition, spannableString);
+            }
+        } catch (Exception e) {
+            Toast.makeText(this, "Error inserting image", Toast.LENGTH_SHORT).show();
         }
     }
 }
