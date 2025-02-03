@@ -1,25 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:paddingTop="16dp">
 
     <!-- Main Content Layout (90% Width) -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
-        android:padding="16dp"
         >
 
         <EditText
             android:id="@+id/editTitle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Title"/>
+            android:hint="Title" />
 
         <EditText
             android:id="@+id/editContent"
-            android:layout_width="374dp"
+            android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"
             android:gravity="start|top"
@@ -35,25 +35,25 @@
             android:layout_gravity="center_horizontal"/>
     </LinearLayout>
 
-    <!-- Floating Resource Bar (10% Width) -->
+    <!-- Bottom Toolbar -->
     <LinearLayout
-        android:id="@+id/resourceBar"
-        android:layout_width="50dp"
-        android:layout_height="match_parent"
-        android:layout_gravity="end"
-        android:orientation="vertical"
-        android:gravity="center"
-        android:elevation="8dp"
+        android:id="@+id/bottomToolbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:gravity="start"
+        android:orientation="horizontal"
         android:padding="8dp">
 
-        <ImageView
-            android:id="@+id/resourceImage"
+        <ImageButton
+            android:id="@+id/resourceImageButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:src="@drawable/images"
+            android:background="?attr/selectableItemBackgroundBorderless"
             android:contentDescription="Resource Image"
-            android:padding="8dp"/>
-
+            android:onClick="onResourceImageClick"
+            android:padding="8dp"
+            android:src="@drawable/images" />
     </LinearLayout>
 
 </FrameLayout>
