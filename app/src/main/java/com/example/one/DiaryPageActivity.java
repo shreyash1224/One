@@ -7,23 +7,21 @@ import android.os.Bundle;
 import android.provider.MediaStore;
 import android.view.View;
 import android.widget.ImageView;
-import androidx.activity.result.ActivityResult;
-import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
-
 import android.graphics.Bitmap;
 import android.widget.EditText;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.style.ImageSpan;
 import android.widget.Toast;
+import java.util.ArrayList;
 
 public class DiaryPageActivity extends AppCompatActivity {
 
     private static final int IMAGE_PICK_REQUEST = 1;
-    EditText editTitle, editContent;
-    DiaryDatabaseHelper dbHelper;
-    String pageTitle;
+    private EditText editTitle, editContent;
+    private DiaryDatabaseHelper dbHelper;
+    private String pageTitle;
     private Uri selectedImageUri;
 
     @Override
@@ -31,10 +29,12 @@ public class DiaryPageActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_diary_page);
 
+        // Initialize views
         editTitle = findViewById(R.id.editTitle);
         editContent = findViewById(R.id.editContent);
-        dbHelper = new DiaryDatabaseHelper(this);
+        dbHelper = new DiaryDatabaseHelper(this);  // ✅ Initialize dbHelper first
 
+        // Get page title from intent
         Intent intent = getIntent();
         pageTitle = intent.getStringExtra("pageTitle");
 
@@ -42,43 +42,61 @@ public class DiaryPageActivity extends AppCompatActivity {
             DiaryPage page = dbHelper.getPage(pageTitle);
             editTitle.setText(page.getTitle());
             editContent.setText(page.getContent());
+
+            // Load and insert images after text is set
+            ArrayList<String> resourceUris = dbHelper.getResourcesForPage(pageTitle);
+            for (String uri : resourceUris) {
+                insertImageAtCursor(Uri.parse(uri));
+            }
         }
     }
+
+    private void insertImageAtCursor(Uri imageUri) {
+        try {
+            Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), imageUri);
+            int maxHeight = editContent.getLineHeight() * 6;
+            if (bitmap.getHeight() > maxHeight) {
+                float ratio = (float) maxHeight / bitmap.getHeight();
+                bitmap = Bitmap.createScaledBitmap(bitmap, (int) (bitmap.getWidth() * ratio), maxHeight, false);
+            }
+
+            ImageSpan imageSpan = new ImageSpan(this, bitmap);
+            int cursorPosition = editContent.getSelectionStart();
+            SpannableString spannableString = new SpannableString(" ");
+            spannableString.setSpan(imageSpan, 0, 1, Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
+
+            editContent.getText().insert(cursorPosition, spannableString);
+        } catch (Exception e) {
+            Toast.makeText(this, "Error inserting image", Toast.LENGTH_SHORT).show();
+        }
+    }
+
     public void deletePage(View view) {
         String title = editTitle.getText().toString().trim();
 
         if (!title.isEmpty()) {
-            // Call the delete function in the database helper
             dbHelper.deletePage(title);
-
-            // Show a toast message to confirm deletion
             Toast.makeText(this, "Page deleted", Toast.LENGTH_SHORT).show();
 
-            // Navigate back to the MainActivity after deletion
+            // Navigate back to MainActivity
             Intent intent = new Intent(DiaryPageActivity.this, MainActivity.class);
             startActivity(intent);
-            finish(); // Optionally finish the current activity
+            finish();
         } else {
             Toast.makeText(this, "Page title is empty", Toast.LENGTH_SHORT).show();
         }
     }
 
-
     @Override
     protected void onPause() {
         super.onPause();
-
-        // Check if there are changes and save the content
         String title = editTitle.getText().toString().trim();
         String content = editContent.getText().toString().trim();
 
-        // Only save if the title or content has changed
-        if (title.length() > 0 && content.length() > 0) {
+        if (!title.isEmpty() && !content.isEmpty()) {
             if (pageTitle != null) {
-                // Update existing page
                 dbHelper.updatePage(pageTitle, title, content);
             } else {
-                // Save as a new page if the title is empty (optional)
                 dbHelper.addPage(title, content);
             }
         }
@@ -94,33 +112,13 @@ public class DiaryPageActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == RESULT_OK && requestCode == IMAGE_PICK_REQUEST) {
-            selectedImageUri = data.getData();
-            // Add the image into the content at the cursor position
-            insertImageAtCursor();
-        }
-    }
+            Uri selectedImageUri = data.getData();
+            String pageTitle = editTitle.getText().toString().trim();
 
-    private void insertImageAtCursor() {
-        try {
-            if (selectedImageUri != null) {
-                Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), selectedImageUri);
-                // Resize the image to fit within the height of 6 lines of text
-                int maxHeight = editContent.getLineHeight() * 6;  // 6 lines of text
-                if (bitmap.getHeight() > maxHeight) {
-                    float ratio = (float) maxHeight / bitmap.getHeight();
-                    int width = (int) (bitmap.getWidth() * ratio);
-                    bitmap = Bitmap.createScaledBitmap(bitmap, width, maxHeight, false);
-                }
-
-                ImageSpan imageSpan = new ImageSpan(this, bitmap);
-                int cursorPosition = editContent.getSelectionStart();
-                SpannableString spannableString = new SpannableString(" ");  // A space to hold the image
-                spannableString.setSpan(imageSpan, 0, 1, Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
-
-                editContent.getText().insert(cursorPosition, spannableString);
+            if (!pageTitle.isEmpty() && selectedImageUri != null) {
+                dbHelper.addResource(pageTitle, selectedImageUri.toString());
+                insertImageAtCursor(selectedImageUri);
             }
-        } catch (Exception e) {
-            Toast.makeText(this, "Error inserting image", Toast.LENGTH_SHORT).show();
         }
     }
 }

@@ -23,12 +23,48 @@ public class DiaryDatabaseHelper extends SQLiteOpenHelper {
     }
 
     @Override
+
     public void onCreate(SQLiteDatabase db) {
+        // Create Diary Table with pageId
         String createTable = "CREATE TABLE " + TABLE_DIARY + " (" +
-                COLUMN_TITLE + " TEXT PRIMARY KEY, " +
+                "pageId TEXT PRIMARY KEY, " +  // ✅ Added pageId
+                COLUMN_TITLE + " TEXT, " +
                 COLUMN_CONTENT + " TEXT)";
         db.execSQL(createTable);
+
+        // Create Resources Table
+        String createResourcesTable = "CREATE TABLE resources (" +
+                "pageId TEXT, " +
+                "resourceUri TEXT, " +
+                "FOREIGN KEY (pageId) REFERENCES " + TABLE_DIARY + "(pageId))";  // ✅ Correct reference
+        db.execSQL(createResourcesTable);
     }
+
+
+    public void addResource(String pageId, String resourceUri) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put("pageId", pageId);
+        values.put("resourceUri", resourceUri);
+        db.insert("resources", null, values);
+        db.close();
+    }
+
+
+
+    @SuppressLint("Range")
+    public ArrayList<String> getResourcesForPage(String pageId) {
+        ArrayList<String> resourceUris = new ArrayList<>();
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.query("resources", new String[]{"resourceUri"}, "pageId = ?",
+                new String[]{pageId}, null, null, null);
+        while (cursor.moveToNext()) {
+            resourceUris.add(cursor.getString(cursor.getColumnIndex("resourceUri")));
+        }
+        cursor.close();
+        return resourceUris;
+    }
+
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
