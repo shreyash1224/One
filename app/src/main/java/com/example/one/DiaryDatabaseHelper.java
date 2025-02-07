@@ -1,5 +1,6 @@
 package com.example.one;
 
+import android.annotation.SuppressLint;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
@@ -89,7 +90,7 @@ public class DiaryDatabaseHelper extends SQLiteOpenHelper {
 
         if (cursor != null) {
             while (cursor.moveToNext()) {
-                String title = cursor.getString(cursor.getColumnIndex(COLUMN_TITLE));
+                @SuppressLint("Range") String title = cursor.getString(cursor.getColumnIndex(COLUMN_TITLE));
                 pages.add(title);
             }
             cursor.close();
