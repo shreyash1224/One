@@ -133,4 +133,13 @@ public class DiaryDatabaseHelper extends SQLiteOpenHelper {
         }
         return pages;
     }
+
+    public boolean pageExists(String title) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.rawQuery("SELECT 1 FROM diary WHERE title = ?", new String[]{title});
+        boolean exists = cursor.moveToFirst();
+        cursor.close();
+        return exists;
+    }
+
 }
