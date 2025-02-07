@@ -44,6 +44,45 @@ public class DiaryPageActivity extends AppCompatActivity {
             editContent.setText(page.getContent());
         }
     }
+    public void deletePage(View view) {
+        String title = editTitle.getText().toString().trim();
+
+        if (!title.isEmpty()) {
+            // Call the delete function in the database helper
+            dbHelper.deletePage(title);
+
+            // Show a toast message to confirm deletion
+            Toast.makeText(this, "Page deleted", Toast.LENGTH_SHORT).show();
+
+            // Navigate back to the MainActivity after deletion
+            Intent intent = new Intent(DiaryPageActivity.this, MainActivity.class);
+            startActivity(intent);
+            finish(); // Optionally finish the current activity
+        } else {
+            Toast.makeText(this, "Page title is empty", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+
+        // Check if there are changes and save the content
+        String title = editTitle.getText().toString().trim();
+        String content = editContent.getText().toString().trim();
+
+        // Only save if the title or content has changed
+        if (title.length() > 0 && content.length() > 0) {
+            if (pageTitle != null) {
+                // Update existing page
+                dbHelper.updatePage(pageTitle, title, content);
+            } else {
+                // Save as a new page if the title is empty (optional)
+                dbHelper.addPage(title, content);
+            }
+        }
+    }
 
     // Method to pick image from gallery
     public void onResourceImageClick(View view) {

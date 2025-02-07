@@ -5,6 +5,8 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.util.Log;
+
 import java.util.ArrayList;
 
 public class DiaryDatabaseHelper extends SQLiteOpenHelper {
@@ -67,9 +69,17 @@ public class DiaryDatabaseHelper extends SQLiteOpenHelper {
 
     public void deletePage(String title) {
         SQLiteDatabase db = this.getWritableDatabase();
-        db.delete(TABLE_DIARY, COLUMN_TITLE + "=?", new String[]{title});
+        int rowsAffected = db.delete(TABLE_DIARY, COLUMN_TITLE + "=?", new String[]{title});
         db.close();
+
+        // Add a log to check if the delete operation is successful
+        if (rowsAffected > 0) {
+            Log.d("DiaryDatabaseHelper", "Page deleted: " + title);
+        } else {
+            Log.d("DiaryDatabaseHelper", "Failed to delete page: " + title);
+        }
     }
+
 
     public ArrayList<String> getAllPages() {
         ArrayList<String> pages = new ArrayList<>();
